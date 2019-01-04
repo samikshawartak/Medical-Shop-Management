@@ -23,7 +23,7 @@ public class Medical extends JFrame implements ActionListener
     pan.setBackground(Color.PINK);
     add(pan);
 
-    lblu=new JLabel("Name");
+    lblu=new JLabel("UserName");
     lblu.setBounds(50,40,80,25);
     pan.add(lblu);
 
@@ -71,7 +71,7 @@ public class Medical extends JFrame implements ActionListener
               this.dispose();
               Main mn=new Main("MEDICAL STORE MANAGEMENT");
               mn.setVisible(true);
-              mn.setSize(900,500);
+              mn.setSize(900,600);
               mn.setDefaultCloseOperation(EXIT_ON_CLOSE);
               mn.setLocationRelativeTo(null);
               mn.setResizable(false);

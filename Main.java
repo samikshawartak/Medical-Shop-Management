@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
 
 public class Main extends JFrame
 {
@@ -24,15 +25,15 @@ public class Main extends JFrame
     pane.addTab("LOGOUT",new Log());
   }
 
-  public static void main(String[] args)
-  {
-    Main mn=new Main("MEDICAL STORE MANAGEMENT");
-    mn.setVisible(true);
-    mn.setSize(900,500);
-    mn.setDefaultCloseOperation(EXIT_ON_CLOSE);
-    mn.setLocationRelativeTo(null);
-    mn.setResizable(false);
-  }
+//  public static void main(String[] args)
+//  {
+//    Main mn=new Main("MEDICAL STORE MANAGEMENT");
+//    mn.setVisible(true);
+//    mn.setSize(900,600);
+//    mn.setDefaultCloseOperation(EXIT_ON_CLOSE);
+//    mn.setLocationRelativeTo(null);
+//    mn.setResizable(false);
+//  }
 }
 
 class Bill extends JPanel implements ActionListener
@@ -43,7 +44,7 @@ class Bill extends JPanel implements ActionListener
   JButton bb;
   Connection con;
   String med;
-  int qty,quan;
+  int qty,price;
     
   
   public Bill()
@@ -87,9 +88,24 @@ class Bill extends JPanel implements ActionListener
             pstmt.setInt(1,qty);
             pstmt.setString(2,med);
             pstmt.executeUpdate();
+            PreparedStatement stmt=con.prepareStatement("select price from medicine where name=?");
+            stmt.setString(1, med);
+            ResultSet rs=stmt.executeQuery();
+            while(rs.next())
+                price=rs.getInt("price");
+         
             JOptionPane.showMessageDialog(null,"Bill generated");
+            
+            Billpage bp=new Billpage("Bill"); 
+            bp.setVisible(true);
+            bp.setSize(400, 400);
+            bp.setDefaultCloseOperation(EXIT_ON_CLOSE);
+            bp.setLocationRelativeTo(null);
+            bp.setResizable(false);
+            
+            bp.billdisplay(med, qty,price);
         } 
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             System.out.println(ex);
         }
@@ -98,11 +114,11 @@ class Bill extends JPanel implements ActionListener
 
 class Add extends JPanel implements ActionListener
 {
-  JLabel al1,al2,al3;
-  JTextField atf1,atf2,atf3;
+  JLabel al1,al2,al3,al4;
+  JTextField atf1,atf2,atf3,atf4;
   JButton ab;
   String mname,comp;
-  int quan;
+  int quan,pr;
   Connection con;
   public Add()
   {
@@ -132,9 +148,17 @@ class Add extends JPanel implements ActionListener
     atf3=new JTextField();
     atf3.setBounds(500,230,150,30);
     add(atf3);
+    
+    al4=new JLabel("Enter Price");
+    al4.setBounds(200,310,100,30);
+    add(al4);
+    
+    atf4=new JTextField();
+    atf4.setBounds(500,310,150,30);
+    add(atf4);
 
     ab=new JButton("ADD");
-    ab.setBounds(310,320,200,30);
+    ab.setBounds(310,390,200,30);
     add(ab);
     ab.addActionListener(this);
   }
@@ -144,15 +168,18 @@ class Add extends JPanel implements ActionListener
       mname=atf1.getText();
       comp=atf2.getText();
       quan=Integer.parseInt(atf3.getText());
+      pr=Integer.parseInt(atf4.getText());
       
       try
       {
         Class.forName("com.mysql.jdbc.Driver");
         con=DriverManager.getConnection("jdbc:mysql://localhost:3306/example","root","pass");
-        PreparedStatement pstmt=con.prepareStatement("insert into medicine(name,company,quantity) values(?,?,?)");
+        PreparedStatement pstmt=con.prepareStatement("insert into medicine(name,company,quantity,price) "
+                + "values(?,?,?,?)");
         pstmt.setString(1,mname);
         pstmt.setString(2, comp);
         pstmt.setInt(3,quan);
+        pstmt.setInt(4,pr);
         pstmt.executeUpdate();
         JOptionPane.showMessageDialog(null,"New stock inserted successfully");
         con.close();
@@ -303,9 +330,13 @@ class Log extends JPanel implements ActionListener
           con=DriverManager.getConnection("jdbc:mysql://localhost:3306/example","root","pass");            
           Statement stmt=con.createStatement();
           ResultSet rs=stmt.executeQuery("select * from medicine");
+          ta.append("ID\tMEDICINE\t\tCOMPANY\t\tQUANTITY\t\tPRICE\n\n");
           while(rs.next())
-          ta.append(rs.getInt(1)+"                     "+rs.getString(2)+"                  "
-                  + " "+rs.getString(3)+"                 "+rs.getInt(4)+"\n");
+          {
+                ta.append(rs.getInt(1)+"\t"+rs.getString(2)+"\t\t"
+                      +rs.getString(3)+"\t\t"+rs.getInt(4)+"\t\t"
+                      +rs.getInt(5)+"\n");
+          }
           con.close();
             
       } 
